@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MDB Filter - Analysis Results Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        header h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        header p {
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+
+        .status-bar {
+            background: white;
+            padding: 15px 30px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .status-item {
+            text-align: center;
+        }
+
+        .status-label {
+            color: #7f8c8d;
+            font-size: 12px;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+
+        .status-value {
+            color: #2c3e50;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border-left: 5px solid #3498db;
+        }
+
+        .stat-card.academic {
+            border-left-color: #27ae60;
+        }
+
+        .stat-card.non-academic {
+            border-left-color: #e74c3c;
+        }
+
+        .stat-card.total {
+            border-left-color: #3498db;
+        }
+
+        .stat-card h3 {
+            color: #7f8c8d;
+            font-size: 12px;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+
+        .stat-card .number {
+            color: #2c3e50;
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .stat-card .percent {
+            color: #95a5a6;
+            font-size: 12px;
+        }
+
+        .chart-container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+
+        .chart-container h2 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 18px;
+        }
+
+        .chart {
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
+            height: 200px;
+        }
+
+        .chart-bar {
+            flex: 1;
+            border-radius: 4px 4px 0 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            align-items: center;
+            padding-bottom: 10px;
+            color: white;
+            font-weight: bold;
+        }
+
+        .chart-bar.academic {
+            background: linear-gradient(to top, #27ae60, #2ecc71);
+        }
+
+        .chart-bar.non-academic {
+            background: linear-gradient(to top, #e74c3c, #e67e22);
+        }
+
+        .messages-container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .messages-container h2 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 18px;
+        }
+
+        .filter-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .filter-btn {
+            padding: 8px 16px;
+            border: 2px solid #ecf0f1;
+            background: white;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .filter-btn.active {
+            background: #3498db;
+            color: white;
+            border-color: #3498db;
+        }
+
+        .filter-btn:hover {
+            border-color: #3498db;
+        }
+
+        .messages-list {
+            display: grid;
+            gap: 15px;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .message-card {
+            padding: 15px;
+            border-left: 4px solid #ecf0f1;
+            border-radius: 4px;
+            background: #f8f9fa;
+        }
+
+        .message-card.academic {
+            border-left-color: #27ae60;
+            background: #f0fdf4;
+        }
+
+        .message-card.non-academic {
+            border-left-color: #e74c3c;
+            background: #fef2f2;
+        }
+
+        .message-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .message-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 3px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        .message-badge.academic {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .message-badge.non-academic {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .message-confidence {
+            font-size: 12px;
+            color: #7f8c8d;
+        }
+
+        .message-text {
+            color: #2c3e50;
+            line-height: 1.5;
+            font-size: 13px;
+        }
+
+        .message-patterns {
+            margin-top: 8px;
+            font-size: 11px;
+            color: #95a5a6;
+        }
+
+        .pattern-tag {
+            display: inline-block;
+            background: #ecf0f1;
+            padding: 2px 6px;
+            border-radius: 3px;
+            margin-right: 4px;
+            margin-top: 4px;
+        }
+
+        .export-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #ecf0f1;
+        }
+
+        .export-btn {
+            padding: 10px 20px;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background 0.3s;
+        }
+
+        .export-btn:hover {
+            background: #2980b9;
+        }
+
+        .export-btn.csv {
+            background: #27ae60;
+        }
+
+        .export-btn.csv:hover {
+            background: #229954;
+        }
+
+        .export-btn.json {
+            background: #e67e22;
+        }
+
+        .export-btn.json:hover {
+            background: #d35400;
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 40px;
+            color: #95a5a6;
+        }
+
+        .no-data p {
+            margin-bottom: 10px;
+        }
+
+        .no-data button {
+            padding: 10px 20px;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .scrollbar::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        .scrollbar::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 10px;
+        }
+
+        .scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+
+        .messages-list {
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            header {
+                padding: 20px;
+            }
+
+            .status-bar {
+                flex-direction: column;
+                gap: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎓 MDB Filter - Analysis Dashboard</h1>
+            <p>Virtual University Discussion Board Analysis Results</p>
+        </header>
+
+        <div id="noDataContainer" class="no-data" style="background: white; border-radius: 8px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+            <p style="font-size: 16px; margin: 20px 0;">📊 No analysis results yet</p>
+            <p style="font-size: 14px; color: #7f8c8d; margin-bottom: 20px;">
+                Use the MDB Filter browser extension to analyze discussion board messages and view results here.
+            </p>
+            <button onclick="location.href='extension-test.html'">View Test Page</button>
+        </div>
+
+        <div id="resultsContainer" style="display: none;">
+            <!-- Status Bar -->
+            <div class="status-bar">
+                <div class="status-item">
+                    <div class="status-label">Total Messages</div>
+                    <div class="status-value" id="totalMsgs">0</div>
+                </div>
+                <div class="status-item">
+                    <div class="status-label">Academic</div>
+                    <div class="status-value" style="color: #27ae60;" id="academicMsgs">0</div>
+                </div>
+                <div class="status-item">
+                    <div class="status-label">Non-Academic</div>
+                    <div class="status-value" style="color: #e74c3c;" id="nonAcademicMsgs">0</div>
+                </div>
+                <div class="status-item">
+                    <div class="status-label">Analysis Time</div>
+                    <div class="status-value" style="font-size: 16px;">
+                        <span id="analysisTime">-</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Statistics Cards -->
+            <div class="stats-grid">
+                <div class="stat-card total">
+                    <h3>Total Messages Analyzed</h3>
+                    <div class="number" id="statTotal">0</div>
+                    <div class="percent">100%</div>
+                </div>
+
+                <div class="stat-card academic">
+                    <h3>Academic Messages</h3>
+                    <div class="number" id="statAcademic">0</div>
+                    <div class="percent"><span id="percentAcademic">0</span>%</div>
+                </div>
+
+                <div class="stat-card non-academic">
+                    <h3>Non-Academic Messages</h3>
+                    <div class="number" id="statNonAcademic">0</div>
+                    <div class="percent"><span id="percentNonAcademic">0</span>%</div>
+                </div>
+            </div>
+
+            <!-- Chart -->
+            <div class="chart-container">
+                <h2>📊 Distribution</h2>
+                <div class="chart">
+                    <div class="chart-bar academic" id="academicBar" style="width: 50%;">
+                        <span id="chartAcademicValue">0</span>
+                    </div>
+                    <div class="chart-bar non-academic" id="nonAcademicBar" style="width: 50%;">
+                        <span id="chartNonAcademicValue">0</span>
+                    </div>
+                </div>
+                <div style="display: flex; justify-content: space-around; margin-top: 20px; text-align: center;">
+                    <div>
+                        <div style="color: #27ae60; font-weight: bold;">🟢 Academic</div>
+                        <div style="font-size: 12px; color: #7f8c8d;"><span id="chartPercentAcademic">0</span>%</div>
+                    </div>
+                    <div>
+                        <div style="color: #e74c3c; font-weight: bold;">🔴 Non-Academic</div>
+                        <div style="font-size: 12px; color: #7f8c8d;"><span id="chartPercentNonAcademic">0</span>%</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Messages -->
+            <div class="messages-container">
+                <h2>📝 Message Analysis</h2>
+
+                <div class="filter-buttons">
+                    <button class="filter-btn active" onclick="filterMessages('all')">All Messages</button>
+                    <button class="filter-btn" onclick="filterMessages('academic')">Academic</button>
+                    <button class="filter-btn" onclick="filterMessages('non-academic')">Non-Academic</button>
+                </div>
+
+                <div class="messages-list scrollbar" id="messagesList">
+                    <!-- Messages will be inserted here -->
+                </div>
+
+                <div class="export-buttons">
+                    <button class="export-btn csv" onclick="exportCSV()">📥 Export CSV</button>
+                    <button class="export-btn json" onclick="exportJSON()">📥 Export JSON</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let analysisData = null;
+        let currentFilter = 'all';
+
+        // Load data from localStorage or URL parameter
+        function loadData() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const dataParam = urlParams.get('data');
+
+            if (dataParam) {
+                try {
+                    analysisData = JSON.parse(decodeURIComponent(dataParam));
+                    displayResults();
+                } catch (e) {
+                    console.error('Error parsing data:', e);
+                }
+            } else {
+                // Check localStorage for recent results
+                const stored = localStorage.getItem('mdbFilterResults');
+                if (stored) {
+                    try {
+                        analysisData = JSON.parse(stored);
+                        displayResults();
+                    } catch (e) {
+                        console.error('Error parsing stored data:', e);
+                    }
+                }
+            }
+        }
+
+        function displayResults() {
+            if (!analysisData || !analysisData.messages) {
+                document.getElementById('noDataContainer').style.display = 'block';
+                document.getElementById('resultsContainer').style.display = 'none';
+                return;
+            }
+
+            document.getElementById('noDataContainer').style.display = 'none';
+            document.getElementById('resultsContainer').style.display = 'block';
+
+            // Update status bar
+            const total = analysisData.totalMessages;
+            const academic = analysisData.academicCount;
+            const nonAcademic = analysisData.nonAcademicCount;
+
+            document.getElementById('totalMsgs').textContent = total;
+            document.getElementById('academicMsgs').textContent = academic;
+            document.getElementById('nonAcademicMsgs').textContent = nonAcademic;
+            document.getElementById('analysisTime').textContent = new Date().toLocaleTimeString();
+
+            // Update stats
+            document.getElementById('statTotal').textContent = total;
+            document.getElementById('statAcademic').textContent = academic;
+            document.getElementById('statNonAcademic').textContent = nonAcademic;
+            document.getElementById('percentAcademic').textContent = analysisData.academicPercentage;
+            document.getElementById('percentNonAcademic').textContent = analysisData.nonAcademicPercentage;
+
+            // Update chart
+            document.getElementById('chartAcademicValue').textContent = academic;
+            document.getElementById('chartNonAcademicValue').textContent = nonAcademic;
+            document.getElementById('chartPercentAcademic').textContent = analysisData.academicPercentage;
+            document.getElementById('chartPercentNonAcademic').textContent = analysisData.nonAcademicPercentage;
+
+            // Set chart bar heights
+            const maxCount = Math.max(academic, nonAcademic);
+            if (maxCount > 0) {
+                document.getElementById('academicBar').style.height = (academic / maxCount * 200) + 'px';
+                document.getElementById('nonAcademicBar').style.height = (nonAcademic / maxCount * 200) + 'px';
+            }
+
+            // Display messages
+            displayMessages();
+        }
+
+        function displayMessages() {
+            const container = document.getElementById('messagesList');
+            container.innerHTML = '';
+
+            let filteredMessages = analysisData.messages;
+            if (currentFilter !== 'all') {
+                filteredMessages = analysisData.messages.filter(m => m.classification === currentFilter);
+            }
+
+            if (filteredMessages.length === 0) {
+                container.innerHTML = '<div class="no-data"><p>No messages found for this filter</p></div>';
+                return;
+            }
+
+            filteredMessages.forEach((msg, index) => {
+                const card = document.createElement('div');
+                card.className = `message-card ${msg.classification}`;
+
+                const patterns = msg.matchedPatterns ? msg.matchedPatterns.join(', ') : 'none';
+
+                card.innerHTML = `
+                    <div class="message-header">
+                        <span class="message-badge ${msg.classification}">
+                            ${msg.classification.toUpperCase()}
+                        </span>
+                        <span class="message-confidence">
+                            Confidence: ${msg.confidence}%
+                        </span>
+                    </div>
+                    <div class="message-text">${escapeHtml(msg.text)}</div>
+                    <div class="message-patterns">
+                        <strong>Patterns:</strong> ${patterns}
+                    </div>
+                `;
+
+                container.appendChild(card);
+            });
+        }
+
+        function filterMessages(type) {
+            currentFilter = type;
+
+            // Update button states
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+
+            displayMessages();
+        }
+
+        function exportCSV() {
+            let csv = 'Classification,Text,Confidence,Patterns\n';
+
+            analysisData.messages.forEach(msg => {
+                const text = msg.text.replace(/"/g, '""');
+                const patterns = (msg.matchedPatterns || []).join(';');
+                csv += `"${msg.classification}","${text}",${msg.confidence},"${patterns}"\n`;
+            });
+
+            downloadFile(csv, 'mdb-analysis.csv', 'text/csv');
+        }
+
+        function exportJSON() {
+            const json = JSON.stringify(analysisData, null, 2);
+            downloadFile(json, 'mdb-analysis.json', 'application/json');
+        }
+
+        function downloadFile(content, filename, type) {
+            const blob = new Blob([content], { type: type });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            a.click();
+            window.URL.revokeObjectURL(url);
+        }
+
+        function escapeHtml(text) {
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.replace(/[&<>"']/g, m => map[m]);
+        }
+
+        // Load data on page load
+        window.addEventListener('DOMContentLoaded', loadData);
+
+        // Listen for messages from extension
+        window.addEventListener('message', (event) => {
+            if (event.data.type === 'MDB_FILTER_RESULTS') {
+                analysisData = event.data.results;
+                localStorage.setItem('mdbFilterResults', JSON.stringify(analysisData));
+                displayResults();
+            }
+        });
+    </script>
+</body>
+</html>

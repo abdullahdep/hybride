@@ -1,0 +1,41 @@
+{
+  "timestamp": "2026-04-30T21:13:04.871784",
+  "dataset": {
+    "total_messages": 25,
+    "distribution": {
+      "academic": 10,
+      "non-academic": 15
+    }
+  },
+  "keyword_filter": {
+    "statistics": {
+      "total_messages": 5,
+      "non_academic_count": 0,
+      "academic_count": 5,
+      "average_score": 0.11428571428571428,
+      "common_patterns": {
+        "irrelevant": 2,
+        "presence": 2
+      }
+    }
+  },
+  "ai_classifier": {
+    "training_metrics": {
+      "accuracy": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1_score": 1.0
+    },
+    "test_metrics": {
+      "accuracy": 1.0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1_score": 0.0
+    },
+    "model_type": "logistic_regression"
+  },
+  "comparison": {
+    "agreement": 0.0,
+    "disagreement_count": 5
+  }
+}

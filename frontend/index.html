@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MDB Filtering Tool - Virtual University</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <h1>📋 Moderated Discussion Board Filtering Tool</h1>
+                <p class="subtitle">Virtual University - Hybrid Filtering System</p>
+            </div>
+            <div class="user-info">
+                <span id="user-role">Faculty Member</span>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Sidebar Controls -->
+            <aside class="sidebar">
+                <div class="control-panel">
+                    <h2>Filter Controls</h2>
+                    
+                    <div class="control-group">
+                        <label class="control-label">Filtering Methods</label>
+                        <div class="toggle-container">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="keyword-filter" class="filter-toggle" checked>
+                                <span>Keyword Filter</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="ai-filter" class="filter-toggle" checked>
+                                <span>AI Classification</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <label class="control-label">Display Options</label>
+                        <div class="radio-container">
+                            <label class="radio-label">
+                                <input type="radio" name="display-mode" value="all" checked>
+                                <span>All Messages</span>
+                            </label>
+                            <label class="radio-label">
+                                <input type="radio" name="display-mode" value="academic">
+                                <span>Academic Only</span>
+                            </label>
+                            <label class="radio-label">
+                                <input type="radio" name="display-mode" value="non-academic">
+                                <span>Non-Academic Only</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <label class="control-label">Actions</label>
+                        <button id="load-demo" class="btn btn-primary">Load Demo Data</button>
+                        <button id="export-csv" class="btn btn-secondary">Export to CSV</button>
+                        <button id="show-metrics" class="btn btn-secondary">View Metrics</button>
+                    </div>
+                </div>
+
+                <!-- Statistics Panel -->
+                <div class="stats-panel">
+                    <h3>Statistics</h3>
+                    <div class="stat-item">
+                        <span class="stat-label">Total Messages</span>
+                        <span class="stat-value" id="total-messages">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Academic</span>
+                        <span class="stat-value academic" id="academic-count">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Non-Academic</span>
+                        <span class="stat-value non-academic" id="non-academic-count">0</span>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Main Messages Area -->
+            <section class="messages-section">
+                <div class="section-header">
+                    <h2>Discussion Messages</h2>
+                    <div class="search-box">
+                        <input type="text" id="search-messages" placeholder="Search messages...">
+                    </div>
+                </div>
+
+                <div class="messages-container" id="messages-container">
+                    <div class="empty-state">
+                        <p>No messages loaded. Click "Load Demo Data" to start.</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Comparison Dashboard Modal -->
+        <div id="metrics-modal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <h2>Performance Metrics Comparison</h2>
+                
+                <div class="metrics-container">
+                    <div class="metric-column">
+                        <h3>Keyword-Based Filtering</h3>
+                        <div class="metric-item">
+                            <span class="metric-label">Accuracy</span>
+                            <span class="metric-value" id="keyword-accuracy">0%</span>
+                        </div>
+                        <div class="metric-item">
+                            <span class="metric-label">Precision</span>
+                            <span class="metric-value" id="keyword-precision">0%</span>
+                        </div>
+                        <div class="metric-item">
+                            <span class="metric-label">Recall</span>
+                            <span class="metric-value" id="keyword-recall">0%</span>
+                        </div>
+                        <div class="metric-item">
+                            <span class="metric-label">F1-Score</span>
+                            <span class="metric-value" id="keyword-f1">0%</span>
+                        </div>
+                    </div>
+
+                    <div class="metric-column">
+                        <h3>AI Classification</h3>
+                        <div class="metric-item">
+                            <span class="metric-label">Accuracy</span>
+                            <span class="metric-value" id="ai-accuracy">0%</span>
+                        </div>
+                        <div class="metric-item">
+                            <span class="metric-label">Precision</span>
+                            <span class="metric-value" id="ai-precision">0%</span>
+                        </div>
+                        <div class="metric-item">
+                            <span class="metric-label">Recall</span>
+                            <span class="metric-value" id="ai-recall">0%</span>
+                        </div>
+                        <div class="metric-item">
+                            <span class="metric-label">F1-Score</span>
+                            <span class="metric-value" id="ai-f1">0%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="comparison-chart">
+                    <canvas id="metrics-chart"></canvas>
+                </div>
+
+                <div class="misclassified-section">
+                    <h3>Misclassified Examples</h3>
+                    <div id="misclassified-list" class="misclassified-list">
+                        <p>Load demo data to view misclassified examples.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>&copy; 2025 Virtual University | Supervisor: Saima Jamil | Hybrid MDB Filtering Tool</p>
+        </footer>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/config.js"></script>
+    <script src="js/data-loader.js"></script>
+    <script src="js/keyword-filter.js"></script>
+    <script src="js/ui-controller.js"></script>
+    <script src="js/export.js"></script>
+</body>
+</html>
