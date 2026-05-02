@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Education Portal</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="navbar">
+        <div class="navbar-brand">
+            <h2>Education Portal</h2>
+        </div>
+        <div class="navbar-menu">
+            <span class="navbar-text">Welcome, {{ admin_username }}!</span>
+            <a href="{{ url_for('logout') }}" class="btn btn-logout">Logout</a>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="dashboard-header">
+            <h1>Admin Dashboard</h1>
+            <p>Manage student and instructor accounts</p>
+        </div>
+
+        <!-- Quick Stats -->
+        <div class="stats-container">
+            <div class="stat-card">
+                <div class="stat-icon">👥</div>
+                <div class="stat-content">
+                    <div class="stat-number">{{ student_count }}</div>
+                    <div class="stat-label">Students</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">👨‍🏫</div>
+                <div class="stat-content">
+                    <div class="stat-number">{{ instructor_count }}</div>
+                    <div class="stat-label">Instructors</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">👤</div>
+                <div class="stat-content">
+                    <div class="stat-number">1</div>
+                    <div class="stat-label">Admin</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+            <a href="{{ url_for('create_student') }}" class="btn btn-primary btn-large">
+                <span class="btn-icon">➕</span> Create Student Account
+            </a>
+            <a href="{{ url_for('create_instructor') }}" class="btn btn-success btn-large">
+                <span class="btn-icon">➕</span> Create Instructor Account
+            </a>
+        </div>
+
+        <!-- Students Table -->
+        <div class="section">
+            <h2>Students</h2>
+            {% if students %}
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Username</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Joined</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for student in students %}
+                        <tr>
+                            <td>{{ student.id }}</td>
+                            <td><code>{{ student.username }}</code></td>
+                            <td>{{ student.first_name }} {{ student.last_name }}</td>
+                            <td>{{ student.email }}</td>
+                            <td>{{ student.created_at[:10] }}</td>
+                            <td>
+                                <button class="btn btn-sm btn-danger" 
+                                        onclick="deleteUser({{ student.id }}, 'student', '{{ student.first_name }} {{ student.last_name }}')">
+                                    Delete
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <p>No students created yet. <a href="{{ url_for('create_student') }}">Create one now</a></p>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Instructors Table -->
+        <div class="section">
+            <h2>Instructors</h2>
+            {% if instructors %}
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Username</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Department</th>
+                            <th>Joined</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for instructor in instructors %}
+                        <tr>
+                            <td>{{ instructor.id }}</td>
+                            <td><code>{{ instructor.username }}</code></td>
+                            <td>{{ instructor.first_name }} {{ instructor.last_name }}</td>
+                            <td>{{ instructor.email }}</td>
+                            <td>{{ instructor.department }}</td>
+                            <td>{{ instructor.created_at[:10] }}</td>
+                            <td>
+                                <button class="btn btn-sm btn-danger" 
+                                        onclick="deleteUser({{ instructor.id }}, 'instructor', '{{ instructor.first_name }} {{ instructor.last_name }}')">
+                                    Delete
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <p>No instructors created yet. <a href="{{ url_for('create_instructor') }}">Create one now</a></p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <script>
+        function deleteUser(userId, userType, userName) {
+            if (confirm(`Are you sure you want to delete ${userName}?`)) {
+                fetch('{{ url_for("api_delete_user") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        user_id: userId,
+                        user_type: userType
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        alert(data.message);
+                        location.reload();
+                    } else {
+                        alert('Error: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred while deleting the user');
+                });
+            }
+        }
+    </script>
+</body>
+</html>

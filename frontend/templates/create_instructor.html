@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Instructor Account - Education Portal</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="navbar">
+        <div class="navbar-brand">
+            <h2>Education Portal</h2>
+        </div>
+        <div class="navbar-menu">
+            <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">Back to Dashboard</a>
+            <a href="{{ url_for('logout') }}" class="btn btn-logout">Logout</a>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="form-header">
+            <h1>Create Instructor Account</h1>
+            <p>Add a new instructor to the system</p>
+        </div>
+
+        {% if error %}
+        <div class="alert alert-error">
+            <strong>Error:</strong> {{ error }}
+        </div>
+        {% endif %}
+
+        {% if success %}
+        <div class="alert alert-success">
+            <strong>Success:</strong> {{ success }}
+        </div>
+        {% endif %}
+
+        <div class="form-container">
+            <form method="POST" class="form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="first_name">First Name:</label>
+                        <input type="text" id="first_name" name="first_name" required 
+                               placeholder="Enter first name">
+                    </div>
+                    <div class="form-group">
+                        <label for="last_name">Last Name:</label>
+                        <input type="text" id="last_name" name="last_name" required 
+                               placeholder="Enter last name">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="username">Username:</label>
+                        <input type="text" id="username" name="username" required 
+                               placeholder="Choose a unique username">
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Email:</label>
+                        <input type="email" id="email" name="email" required 
+                               placeholder="Enter email address">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="department">Department:</label>
+                        <input type="text" id="department" name="department" required 
+                               placeholder="E.g., Computer Science, Mathematics">
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Password:</label>
+                        <input type="password" id="password" name="password" required 
+                               placeholder="Minimum 6 characters">
+                        <small>Password must be at least 6 characters long</small>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary btn-large">Create Instructor Account</button>
+                    <a href="{{ url_for('dashboard') }}" class="btn btn-secondary btn-large">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+</html>
