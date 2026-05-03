@@ -7,7 +7,14 @@ Provides REST endpoints for classification and metrics
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import os
+import sys
 import json
+
+# Add frontend directory to path to import database module
+frontend_path = os.path.join(os.path.dirname(__file__), '..', 'frontend')
+sys.path.insert(0, frontend_path)
+
+from database import get_user, init_db as init_frontend_db
 from .keyword_filter import KeywordFilter
 from .ai_classifier import AIClassifier
 from .utils.data_processor import DataProcessor
@@ -15,6 +22,12 @@ from .utils.data_processor import DataProcessor
 # Initialize app
 app = Flask(__name__)
 CORS(app)
+
+# Initialize frontend database
+try:
+    init_frontend_db()
+except Exception as e:
+    print(f"Note: Frontend database not initialized: {e}")
 
 # Initialize classifiers
 keyword_filter = KeywordFilter()
@@ -40,6 +53,61 @@ def health_check():
         'model_loaded': model_loaded,
         'version': '1.0.0'
     })
+
+
+@app.route('/api/login', methods=['POST'])
+def login():
+    """Authenticate user for browser extension using frontend database"""
+    try:
+        data = request.json
+        username = data.get('username', '')
+        password = data.get('password', '')
+
+        if not username or not password:
+            return jsonify({
+                'success': False,
+                'message': 'Username and password required'
+            }), 400
+
+        # Check credentials against frontend database
+        # Try to get user without type filter (works for all user types)
+        user = get_user(username)
+        
+        if user and user.get('password') == password:
+            return jsonify({
+                'success': True,
+                'message': 'Login successful',
+                'token': f'token_{username}_{os.urandom(8).hex()}',
+                'username': username,
+                'user_type': user.get('user_type'),
+                'email': user.get('email')
+            })
+        else:
+            return jsonify({
+                'success': False,
+                'message': 'Invalid username or password'
+            }), 401
+
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'message': str(e)
+        }), 500
+
+
+@app.route('/api/verify', methods=['POST'])
+def verify_token():
+    """Verify if token is valid"""
+    try:
+        data = request.json
+        token = data.get('token', '')
+
+        if token:
+            return jsonify({'valid': True})
+        return jsonify({'valid': False})
+
+    except Exception as e:
+        return jsonify({'valid': False})
 
 
 @app.route('/api/classify', methods=['POST'])
@@ -193,13 +261,16 @@ def index():
         'name': 'MDB Filtering Tool API',
         'version': '1.0.0',
         'endpoints': {
+            'POST /api/login': 'Authenticate user (uses frontend database)',
+            'POST /api/verify': 'Verify token',
             'GET /api/health': 'Health check',
             'POST /api/classify': 'Classify messages',
             'GET /api/metrics': 'Get performance metrics',
             'GET /api/keywords': 'Get active keywords',
             'POST /api/keywords': 'Add custom keyword',
             'POST /api/train': 'Train AI classifier'
-        }
+        },
+        'note': 'Login uses credentials created in the frontend admin dashboard. Create users there first.'
     })
 
 

@@ -218,6 +218,103 @@ Provides quick access to filtering controls and page results
             color: #666;
             border-top: 1px solid #eee;
         }
+
+        #loginSection {
+            display: none;
+        }
+
+        #mainContent {
+            display: block;
+        }
+
+        .login-form {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group {
+            margin-bottom: 12px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 4px;
+            font-size: 12px;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 12px;
+            box-sizing: border-box;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 4px rgba(52, 152, 219, 0.3);
+        }
+
+        #loginBtn {
+            width: 100%;
+            padding: 10px;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        #loginBtn:hover {
+            background: #2980b9;
+        }
+
+        #logoutBtn {
+            width: 100%;
+            padding: 8px;
+            background: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 11px;
+            margin-top: 10px;
+        }
+
+        #logoutBtn:hover {
+            background: #c0392b;
+        }
+
+        .login-error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            font-size: 12px;
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .user-info {
+            background: #e8f4f8;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            font-size: 11px;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
@@ -226,8 +323,32 @@ Provides quick access to filtering controls and page results
         <p>Virtual University</p>
     </div>
 
-    <div class="popup-content">
+    <!-- Login Section -->
+    <div id="loginSection" class="popup-content">
+        <div class="login-header">
+            <h2 style="font-size: 14px; color: #333; margin-bottom: 10px;">Sign In Required</h2>
+        </div>
+        <div id="loginError" class="login-error" style="display: none;"></div>
+        <form class="login-form" id="loginForm">
+            <div class="form-group">
+                <label for="username">Username:</label>
+                <input type="text" id="username" name="username" required placeholder="Enter your username">
+            </div>
+            <div class="form-group">
+                <label for="password">Password:</label>
+                <input type="password" id="password" name="password" required placeholder="Enter your password">
+            </div>
+            <button type="submit" id="loginBtn">Sign In</button>
+        </form>
+    </div>
+
+    <!-- Main Content Section -->
+    <div id="mainContent" class="popup-content">
         <div class="status" id="status">Inactive</div>
+
+        <div class="user-info" id="userInfo" style="display: none;">
+            Logged in as: <strong id="loggedInUser"></strong>
+        </div>
 
         <div class="control-group">
             <label>
@@ -271,6 +392,8 @@ Provides quick access to filtering controls and page results
             <div class="results-title">Found Text</div>
             <div id="messagesList"></div>
         </div>
+
+        <button id="logoutBtn">Logout</button>
     </div>
 
     <div class="popup-footer">

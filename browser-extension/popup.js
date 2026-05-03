@@ -1,13 +1,122 @@
 /**
  * Popup Script for Chrome Extension
  * Reads text from the active page, sends it to the backend model, and shows results.
+ * Only displays if user is logged in.
  */
 
 const API_BASE_URL = 'http://localhost:5000';
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+    // Check if user is logged in
+    const isLoggedIn = await checkAuthStatus();
+    
+    if (isLoggedIn) {
+        initializeMainContent();
+        displayUserInfo();
+    } else {
+        initializeLoginForm();
+    }
+});
+
+// Check if user is authenticated
+async function checkAuthStatus() {
+    return new Promise((resolve) => {
+        chrome.storage.sync.get(['authToken', 'username'], (result) => {
+            resolve(!!(result.authToken && result.username));
+        });
+    });
+}
+
+// Display user information
+async function displayUserInfo() {
+    chrome.storage.sync.get(['username'], (result) => {
+        if (result.username) {
+            const userInfo = document.getElementById('userInfo');
+            const loggedInUser = document.getElementById('loggedInUser');
+            loggedInUser.textContent = result.username;
+            userInfo.style.display = 'block';
+        }
+    });
+}
+
+// Initialize login form
+function initializeLoginForm() {
+    const loginSection = document.getElementById('loginSection');
+    const mainContent = document.getElementById('mainContent');
+    
+    loginSection.style.display = 'block';
+    mainContent.style.display = 'none';
+    
+    const loginForm = document.getElementById('loginForm');
+    const loginBtn = document.getElementById('loginBtn');
+    const loginError = document.getElementById('loginError');
+    
+    loginForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+        
+        if (!username || !password) {
+            showLoginError('Please enter both username and password');
+            return;
+        }
+        
+        loginBtn.disabled = true;
+        loginBtn.textContent = 'Signing in...';
+        
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/login`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    username: username,
+                    password: password
+                })
+            });
+            
+            const data = await response.json();
+            
+            if (response.ok && data.success) {
+                // Store authentication token and username
+                chrome.storage.sync.set({
+                    authToken: data.token || 'authenticated',
+                    username: username,
+                    loginTime: new Date().getTime()
+                }, () => {
+                    // Refresh popup to show main content
+                    loginSection.style.display = 'none';
+                    mainContent.style.display = 'block';
+                    initializeMainContent();
+                    displayUserInfo();
+                });
+            } else {
+                showLoginError(data.message || 'Invalid username or password');
+            }
+        } catch (error) {
+            showLoginError('Failed to connect to server. Make sure the backend is running.');
+        } finally {
+            loginBtn.disabled = false;
+            loginBtn.textContent = 'Sign In';
+        }
+    });
+    
+    function showLoginError(message) {
+        loginError.textContent = message;
+        loginError.style.display = 'block';
+        setTimeout(() => {
+            loginError.style.display = 'none';
+        }, 4000);
+    }
+}
+
+// Initialize main content
+function initializeMainContent() {
     const classifyBtn = document.getElementById('classifyBtn');
     const settingsBtn = document.getElementById('settingsBtn');
+    const logoutBtn = document.getElementById('logoutBtn');
     const statusDiv = document.getElementById('status');
     const resultsDiv = document.getElementById('results');
     const messagesListDiv = document.getElementById('messagesList');
@@ -51,6 +160,14 @@ document.addEventListener('DOMContentLoaded', () => {
     if (settingsBtn) {
         settingsBtn.addEventListener('click', () => {
             chrome.runtime.openOptionsPage();
+        });
+    }
+
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', () => {
+            chrome.storage.sync.remove(['authToken', 'username', 'loginTime'], () => {
+                location.reload();
+            });
         });
     }
 
@@ -260,7 +377,7 @@ document.addEventListener('DOMContentLoaded', () => {
             element.textContent = value;
         }
     }
-});
+}
 
 function collectReadablePageText() {
     const ignoredTags = new Set(['SCRIPT', 'STYLE', 'NOSCRIPT', 'SVG', 'CANVAS', 'IFRAME']);
